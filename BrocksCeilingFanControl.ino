@@ -9,11 +9,12 @@
 #include "time.h"
 #include "wifi_credentials.h"
 
-#define red_led 32
+#define red_led 26
 #define white_led 23
-#define green_led 26
+#define green_led 32
 #define transmitterLed 22
 #define transmitterPin 25
+#define ldrPin 33
 
 unsigned long previousTimes[2]={0};
 bool blinkOn = false;
@@ -156,6 +157,7 @@ void setup() {
   pinMode(green_led, OUTPUT);
   pinMode(white_led, OUTPUT);
   pinMode(transmitterLed, OUTPUT);
+  pinMode(ldrPin, INPUT);
   pinMode(transmitterPin, OUTPUT);
   setNTPzone();
   transmitFanCode(FAN_OFF); // If the fan is on turn it off for the webpage to handle the button selection better or it will be messed up
@@ -163,15 +165,19 @@ void setup() {
 }
 
 void loop() {
-  blinkWebConnectionLed();
-  if(chkTime(21, 00, 0)){
+  //blinkWebConnectionLed();
+  //int ldrVal = analogRead(ldrPin);
+  if(chkTime(20, 30, 0)){
     transmitFanCode(FAN_LOW);
     transmitFanCode(FANLIGHT_ON_OFF);
   }
 
-  if(chkTime(8, 30, 0)){
-    transmitFanCode(FAN_OFF);
+  if(chkTime(18, 00, 0)){
     transmitFanCode(FANLIGHT_ON_OFF);
+  }
+
+  if(chkTime(6, 30, 0)){
+    transmitFanCode(FAN_OFF);
   }
 
 }
