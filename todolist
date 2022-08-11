@@ -1,0 +1,2 @@
+make web control interface to change the time and control my fan from the webpage
+use wifimanager library to set wifi without hard coding it into the code
