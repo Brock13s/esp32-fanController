@@ -1,4 +1,4 @@
-// Firmware to control my ceiling fan from webpage, alexa and by ntp time.
+// Firmware to control my ceiling fan 
 // Author Brock Mills
 
 #include <RCSwitch.h>
