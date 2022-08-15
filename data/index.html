@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="css.css">
+<title>BrocksFanController</title>
+</head>
+
+<body>
+	<div id="main">
+		<div class="buttonPane">
+			<label>Ceiling fan controls</label>
+	
+			<button id="btn_high">HIGH</button>
+			<button id="btn_med">MEDIUM</button>
+			<button id="btn_low">LOW</button>
+			<button id="btn_off">OFF</button>
+			<button id="btn_changecolor">CHANGE COLOR</button>
+			<button id="btn_lightonoff">LIGHT ON/OFF</button>
+		</div>	
+	
+		<div class="configTimePane">
+			<label class="fanconfiglabel">Fan config time</label>
+			<div class="centerInputs">
+				<label for="ftc1">Set fanlight on time:</label>
+				<input type="time" id="ftc1" name="ftc1">
+			</div>
+			<div class="centerInputs">
+				<label for="ftc2">Set fan on time:</label>
+				<input type="time" id="ftc2" name="ftc2">
+			</div>
+			<div class="centerInputs">
+				<label for="ftc3">Set fan off time:</label>
+				<input type="time" id="ftc3" name="ftc3">
+				<input type="submit">
+			</div>
+		</div>
+	</div>
+	
+	<script src="script.js"></script>
+</body>
+</html>
