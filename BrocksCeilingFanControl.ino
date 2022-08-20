@@ -1,4 +1,4 @@
-// Firmware to control my ceiling fan 
+// Firmware to control my ceiling fan from webpage, alexa and by ntp time.
 // Author Brock Mills
 
 #include <RCSwitch.h>
@@ -18,9 +18,11 @@
 
 unsigned long previousTimes[2]={0};
 bool blinkOn = false;
+const char* message = "";
 
 RCSwitch mySwitch = RCSwitch();
 AsyncWebServer server(80);
+AsyncWebSocket ws("/ws");
 
 IPAddress local_IP(192, 168, 68, 25);
 IPAddress gateway(192, 168, 68, 1);
@@ -56,7 +58,6 @@ IPAddress DNS(202, 142, 142, 142);
 */
 
 
-
 void Wifi_disconnected(WiFiEvent_t event, WiFiEventInfo_t info){
   digitalWrite(red_led, HIGH);
   digitalWrite(green_led, LOW);
@@ -69,15 +70,46 @@ void Wifi_connected(WiFiEvent_t event, WiFiEventInfo_t info){
 }
 
 
+
+void onEventWS(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len){
+  switch(type){
+    case WS_EVT_CONNECT:
+      Serial.printf("Websocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
+      break;
+    case WS_EVT_DISCONNECT:
+      Serial.printf("Websocket client #%u disconnected\n", client->id());
+      break;
+    case WS_EVT_DATA:
+      handleWebSocketMessage(arg, data, len);
+      break;
+    case WS_EVT_ERROR:
+      break;
+  }
+}
+
+void initWebsocket(){
+  ws.onEvent(onEventWS);
+  server.addHandler(&ws);
+}
+
+
 void webpageHandling(){
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-    if(!request->authenticate(HTTP_USER, HTTP_PASS)){
-        return request->requestAuthentication();
-        
-      }
-    //request->send_P(200, "text/html", index_html);
+//    if(!request->authenticate(HTTP_USER, HTTP_PASS)){
+//        return request->requestAuthentication();
+//        
+//      }
+    request->send(SPIFFS, "/index.html", String(), false);
+    
     previousTimes[0] = millis();
     blinkOn = true;
+    });
+    server.on("/css.css", HTTP_GET, [](AsyncWebServerRequest *request){
+      request->send(SPIFFS, "/css.css", "text/css");
+    });
+
+    server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request){
+      request->send(SPIFFS, "/script.js", "text/javascript");
     });
 
   server.begin();
@@ -107,6 +139,32 @@ void transmitFanCode(const char* code){
     digitalWrite(transmitterLed, LOW);
     
   }
+
+void handleWebSocketMessage(void *arg, uint8_t *data, size_t len){
+  AwsFrameInfo *info = (AwsFrameInfo*)arg;
+  if(info->final && info->index == 0 && info->len == len && info -> opcode == WS_TEXT){
+    data[len]=0;
+    message = (char*)data;
+    if(strcmp(message, "FANCODE_MED") == 0){
+      transmitFanCode(FAN_MED);
+    }
+    if(strcmp(message, "FANCODE_LOW") == 0){
+      transmitFanCode(FAN_LOW);
+    }
+    if(strcmp(message, "FANCODE_OFF") == 0){
+      transmitFanCode(FAN_OFF);
+    }
+    if(strcmp(message, "FANCODE_HIGH") == 0){
+      transmitFanCode(FAN_HIGH);
+    }
+    if(strcmp(message, "FANCODE_CHANGECOLOR") == 0){
+      transmitFanCode(CHANGE_LIGHT_COLOR);
+    }
+    if(strcmp(message, "FANCODE_LIGHTONOFF") == 0){
+      transmitFanCode(FANLIGHT_ON_OFF);
+    }
+  }
+}
 
 bool chkTime(int thr, int tmin, int tsec){
   time_t n;
@@ -150,6 +208,9 @@ void setup() {
     }
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
+  if(!SPIFFS.begin(true)){
+    Serial.println("Error occured while trying to mount spiffs :("); 
+  }
   mySwitch.enableTransmit(transmitterPin);
   mySwitch.setProtocol(6);
   mySwitch.setPulseLength(328);
@@ -159,6 +220,7 @@ void setup() {
   pinMode(transmitterLed, OUTPUT);
   pinMode(ldrPin, INPUT);
   pinMode(transmitterPin, OUTPUT);
+  initWebsocket();
   setNTPzone();
   transmitFanCode(FAN_OFF); // If the fan is on turn it off for the webpage to handle the button selection better or it will be messed up
   webpageHandling();
@@ -179,5 +241,6 @@ void loop() {
   if(chkTime(6, 30, 0)){
     transmitFanCode(FAN_OFF);
   }
+  ws.cleanupClients();
 
 }
