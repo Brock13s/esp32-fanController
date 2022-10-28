@@ -17,6 +17,18 @@ button{
 	margin-right: auto;
 }
 
+#temperaturereading{
+	color: yellow;
+}
+
+ #temptext {
+	color: green;
+}
+
+#celciustext {
+	color: purple;
+}
+
 button:hover{
 	background-color: aquamarine !important;
 }
@@ -35,36 +47,16 @@ button:hover{
 	padding: 0 5px;
 }
 
-.configTimePane {
-	display: block;
-	border: 2px solid black;
-	width: 264px;
-	margin-top: 10px;
-	margin-left: 10px;
+@media only screen and (max-width: 384px){
+	.buttonPane{
+		width: 90%;
+	}
+	.servertext{
+		margin-left: 10px;
+	}
 }
+/* Part for other devices*/
+/* 
+@media screen and (max-width: 500px){
 
-.fanconfiglabel{
-	display: block;
-	width: 100%;
-	text-align: center;
-	margin-bottom: 20px;
-	padding: 5px 0;
-	border-bottom: 2px solid black;
-}
-
-.centerInputs label{
-	display: block;
-	width: 100%;
-	text-align: center;
-}
-
-.centerInputs input{
-	display: block;
-	margin: 0 auto;
-}
-
-.configTimePane input{
-	display: block;
-} 
-
-
+} */
