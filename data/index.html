@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <link rel="stylesheet" href="css.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BrocksFanController</title>
 </head>
 
@@ -18,26 +19,11 @@
 			<button id="btn_changecolor">CHANGE COLOR</button>
 			<button id="btn_lightonoff">LIGHT ON/OFF</button>
 		</div>	
-	
-		<div class="configTimePane">
-			<label class="fanconfiglabel">Fan config time</label>
-			<div class="centerInputs">
-				<label for="ftc1">Set fanlight on time:</label>
-				<input type="time" id="ftc1" name="ftc1">
-			</div>
-			<div class="centerInputs">
-				<label for="ftc2">Set fan on time:</label>
-				<input type="time" id="ftc2" name="ftc2">
-			</div>
-			<div class="centerInputs">
-				<label for="ftc3">Set fan off time:</label>
-				<input type="time" id="ftc3" name="ftc3">
-				<input type="submit">
-			</div>
-		</div>
+		<p class="servertext">ESP sucessfully handled <span id="state">%STATE%</span> code</p>
+		<p class="servertext"><span id="temptext">BROCKS ROOM TEMPERATURE</span> <span id="temperaturereading">00</span> <span id="celciustext">celcius</span></p>
+		<p class="servertext"><span>Light status: </span> <span id="lightStateReading">OFF</span></p>
 	</div>
 	
 	<script src="script.js"></script>
 </body>
 </html>
-
