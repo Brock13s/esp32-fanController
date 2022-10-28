@@ -5,6 +5,7 @@ var websocket;
 let bscolor = "#cc0000";
 let bcolor = "#d3d3d3";
 let buttonstate = 0;
+let stateData;
 
 window.addEventListener('load', onload);
 function initWebSocket(){
@@ -12,66 +13,64 @@ function initWebSocket(){
 	websocket = new WebSocket(gateway);
 	websocket.onopen = onOpen;
 	websocket.onclose = onClose;
+	websocket.onmessage = onMessage;
+	websocket.onerror = onError;
 }
 
 function onload(event){
 	initWebSocket();
-	document.getElementById("btn_off").style.background = bscolor;
 	initButtons();
-	
+}
+
+function onMessage(event){ // IF the user presses on one of the buttons and if it was sucessful the server replies back to the client.
+	let text = event.data;
+	let temperature = text.slice(3,5);
+	let lstatus = text.charAt(2);
+
+
+	if(text.startsWith("TEM")){
+		document.getElementById("temperaturereading").innerHTML = temperature;
+	}
+	else if(text.startsWith("LS")){
+		if(lstatus == "1"){
+			
+			document.getElementById("lightStateReading").innerHTML = "ON";
+		} else{
+			document.getElementById("lightStateReading").innerHTML = "OFF";
+		}
+	}
+	 else{
+		document.getElementById("state").innerHTML = text;
+	}
+}
+
+
+function onError(event){
+	console.log(event);
 }
 
 function onOpen(event){
 	console.log('Connection opened');
+	websocket.send("onloadgetmessage");
 }
 
 function initButtons(){
 	document.getElementById('btn_high').addEventListener('click', ()=>{
-		alert("Fan speed set to high");
-		document.getElementById("btn_lightonoff").style.background = "";
-		document.getElementById("btn_changecolor").style.background = "";
-		document.getElementById("btn_off").style.background = "";
-		document.getElementById("btn_low").style.background = "";
-		document.getElementById("btn_med").style.background = "";
-		document.getElementById("btn_high").style.background = bscolor;
 		websocket.send("FANCODE_HIGH");
 	});
 	document.getElementById('btn_med').addEventListener('click', ()=>{
-		alert("Fan speed set to medium");
-		document.getElementById("btn_lightonoff").style.background = "";
-		document.getElementById("btn_changecolor").style.background = "";
-		document.getElementById("btn_off").style.background = "";
-		document.getElementById("btn_low").style.background = "";
-		document.getElementById("btn_med").style.background = bscolor;
-		document.getElementById("btn_high").style.background = "";
 		websocket.send("FANCODE_MED");
 	});
 	document.getElementById('btn_low').addEventListener('click', ()=>{
-		alert("Fan speed set to medium");
-		document.getElementById("btn_lightonoff").style.background = "";
-		document.getElementById("btn_changecolor").style.background = "";
-		document.getElementById("btn_off").style.background = "";
-		document.getElementById("btn_low").style.background = bscolor;
-		document.getElementById("btn_med").style.background = "";
-		document.getElementById("btn_high").style.background = "";
 		websocket.send("FANCODE_LOW");
 	});
 	document.getElementById('btn_off').addEventListener('click', ()=>{
-		alert("Fan speed set to off");
-		document.getElementById("btn_lightonoff").style.background = "";
-			document.getElementById("btn_changecolor").style.background = "";
-			document.getElementById("btn_off").style.background = bscolor;
-			document.getElementById("btn_low").style.background = "";
-			document.getElementById("btn_med").style.background = "";
-			document.getElementById("btn_high").style.background = "";
 			websocket.send("FANCODE_OFF");
 	});
 	document.getElementById('btn_changecolor').addEventListener('click', ()=>{
-		alert("Ceiling fan light color has been changed");
 		websocket.send("FANCODE_CHANGECOLOR");
 	});
 	document.getElementById('btn_lightonoff').addEventListener('click', ()=>{
-		alert("Turned light on/off");
 		websocket.send("FANCODE_LIGHTONOFF");
 	});
 	
@@ -79,5 +78,4 @@ function initButtons(){
 
 function onClose(event){
 	console.log('Connection closed');
-	setTimeout(initWebSocket, 2000);
 }
