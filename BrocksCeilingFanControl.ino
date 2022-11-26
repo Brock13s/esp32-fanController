@@ -410,6 +410,18 @@ void webpageHandling() {
     request->send(SPIFFS, "/script.js", "text/javascript");
   });
 
+  server.on("/bulb-off", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(SPIFFS, "/bulb-off.png", "image/png");
+  });
+
+  server.on("/bulb-on", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(SPIFFS, "/bulb-on.png", "image/png");
+  });
+//
+//  server.on("/sun", HTTP_GET, [](AsyncWebServerRequest *request){
+//    request->send(SPIFFS, "/sun.png", "image/png");
+//  });
+
   server.begin();
 }
 
