@@ -2,57 +2,118 @@
 @charset "utf-8";
 
 html, body{
-	background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(0,191,255,1) 50%, rgba(255,255,255,1) 100%);
+	background-color: rgba(32,33,36,1);
 	height: 100%;
+	margin: 0px;
 		}
 
 button{
 	padding: 1.5em 0;
 	width: 18em;
 	display: block;
-	background-color: #d3d3d3;
+	background-color: #303134;
 	margin-bottom: 10px;
 	cursor: pointer;
 	margin-left: auto;
+	color: white;
+	border-radius: 1em;
 	margin-right: auto;
 }
 
 #temperaturereading{
-	color: yellow;
+	color: #eeff00;
+	text-shadow: 0 0 10px #eeff00;
+}
+
+.servertext{
+	color: #9900ff;
+}
+
+#state{
+	color: #eeff00;
+	text-shadow: 0 0 10px #eeff00;
+}
+
+.lightstatusCon{
+	border: 2px solid #9900ff;;
+	width: 300px;
+	height: 300px;
+	margin: 0 auto;
+	overflow: hidden;
+}
+
+#bulbPic{
+	/* width: 50%; */
+	margin-top: 20px;
+	object-fit: cover;
+	width: 100px;
+}
+
+#fish{
+	color: #9900ff;
+	text-shadow: 0 0 10px #9900ff;
+}
+
+#lightStateReading{
+	color: #eeff00;;
+	text-shadow: 0 0 10px #eeff00;;
 }
 
  #temptext {
-	color: green;
+	color: #9900ff;
 }
 
 #celciustext {
-	color: purple;
+	color: #9900ff;
+	text-shadow: 0 0 10px #9900ff;
 }
 
 button:hover{
-	background-color: aquamarine !important;
+	/*background-color: aquamarine !important;*/
+	border: 2px solid white;
+}
+
+#informationText{
+	text-align: center;
 }
 
 .buttonPane label{
 	display: block;
+	text-align: center;
+	color: #9900ff;
 	font-size: 2em;
 	margin-bottom: 20px;
 }
 
 .buttonPane{
-	display: inline-block;
-	margin-left: 10px;
-	border: 2px solid black;
-	margin-top: 10px;
+	display: block;
+	padding-top: 10px;
+	/*margin-left: 10px;*/
+	width: 260px;
+	margin-left: auto;
+	margin-right: auto;
+	border: 2px solid #9900ff;;
 	padding: 0 5px;
+}
+
+#main{
+	margin: auto;
+	width: 60%;
+	height: 100%;
+	padding-top: 10px;
 }
 
 @media only screen and (max-width: 384px){
 	.buttonPane{
-		width: 90%;
+		width: 110%;
 	}
-	.servertext{
-		margin-left: 10px;
+
+	.lightstatusCon{
+		width: 260px;
+	}
+
+	 #informationText > .servertext{
+		margin-left: 30px;
 	}
 }
 /* Part for other devices*/

@@ -35,8 +35,10 @@ function onMessage(event){ // IF the user presses on one of the buttons and if i
 		if(lstatus == "1"){
 			
 			document.getElementById("lightStateReading").innerHTML = "ON";
+			document.getElementById("bulbPic").src = 'bulb-on';
 		} else{
 			document.getElementById("lightStateReading").innerHTML = "OFF";
+			document.getElementById("bulbPic").src = 'bulb-off';
 		}
 	}
 	 else{
