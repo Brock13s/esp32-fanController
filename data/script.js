@@ -53,7 +53,6 @@ function onError(event){
 
 function onOpen(event){
 	console.log('Connection opened');
-	websocket.send("onloadgetmessage");
 }
 
 function initButtons(){
