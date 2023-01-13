@@ -19,16 +19,16 @@
 #define buttonPin 34
 #define temperatureSensor 33
 
-unsigned long previousTimes[6] = {0};
+unsigned long previousTimes[8] = {0};
 uint8_t fanlightOnTime[3] = {18, 00, 0};
 uint8_t fanOnTime[3] = {20, 30, 0};
-uint8_t fanlightOffTime[3] = {06, 30, 0};
+uint8_t fanlightOffTime[3] = {07, 50, 0};
+unsigned long days = 1;
 bool blinkOn = false;
 String message = "FANCODE_OFF";
 
 bool lightState = false;
 bool ktState = false;
-bool wifiConnection = true;
 
 RCSwitch mySwitch = RCSwitch();
 OneWire ts(19);
@@ -47,50 +47,37 @@ void Wifi_disconnected(WiFiEvent_t event, WiFiEventInfo_t info) {
 }
 
 void Wifi_connected(WiFiEvent_t event, WiFiEventInfo_t info) {
-  digitalWrite(red_led, HIGH);
+  digitalWrite(red_led, LOW);
   digitalWrite(green_led, HIGH);
-  wifiConnection = false;
 }
 
-int outputTemp(){
+int outputTemp() {
   byte tempData[12] = {};
   byte addr[8] = {0x28, 0x6A, 0x32, 0x8E, 0x81, 0x22, 0x0B, 0x60};
   ts.reset();
   ts.select(addr);
-  ts.write(0x4E);
+  //ts.write(0x4E);
   ts.write(0x00);
   ts.write(0x00);
-  ts.write(0x1F);
   ts.reset();
   ts.select(addr);
   ts.write(0x44, 1);
   ts.reset();
   ts.select(addr);
   ts.write(0xBE);
-  for(int x=0; x<9; x++){
+  for (int x = 0; x < 9; x++) {
     tempData[x] = ts.read();
   }
+
   byte MSB = tempData[1];
   byte LSB = tempData[0];
   float tempred = ((MSB << 8) | LSB);
   int TemperatureSum = tempred / 16;
-  if(TemperatureSum>0){
+  if (TemperatureSum > 0) {
     return TemperatureSum;
   }
-  
-}
 
-void pingCheck(){
-  if(Ping.ping("www.google.com")){
-    digitalWrite(green_led, HIGH);
-    digitalWrite(red_led, LOW);
-    wifiConnection = true;
-  } else{
-    digitalWrite(red_led, HIGH);
-    digitalWrite(green_led, HIGH);
-  }
 }
-
 
 
 void onEventWS(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
@@ -100,6 +87,7 @@ void onEventWS(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
       blinkOn = true;
       ws.textAll("TEM" + String(outputTemp()));
       ws.textAll("LS" + String(lightState));
+      ws.textAll("DAY" + String(days));
       ws.textAll(message);
       break;
     case WS_EVT_DISCONNECT:
@@ -134,12 +122,16 @@ void webpageHandling() {
     request->send(SPIFFS, "/script.js", "text/javascript");
   });
 
-  server.on("/bulb-off", HTTP_GET, [](AsyncWebServerRequest *request){
+  server.on("/bulb-off", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/bulb-off.png", "image/png");
   });
 
-  server.on("/bulb-on", HTTP_GET, [](AsyncWebServerRequest *request){
+  server.on("/bulb-on", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/bulb-on.png", "image/png");
+  });
+
+  server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest * request){
+    request->send(SPIFFS, "/favicon.png", "image/png");
   });
 
   server.begin();
@@ -186,10 +178,10 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       ws.textAll(message);
     }
     if (strcmp(message.c_str(), "FANCODE_LIGHTONOFF") == 0) {
-      lightState =! lightState;
+      lightState = ! lightState;
       transmitFanCode(FANLIGHT_ON_OFF);
       ws.textAll(message);
-      
+
     }
   }
 }
@@ -225,15 +217,15 @@ void blinkWebConnectionLed() {
   }
 }
 
-String readFile(fs::FS &fs, const char* path){
+String readFile(fs::FS &fs, const char* path) {
   Serial.printf("Reading file: %s\r\n", path);
   File file = fs.open(path);
-  if(!file || file.isDirectory()){
+  if (!file || file.isDirectory()) {
     Serial.println("FAILED TO OPEN FILE TO READ");
     return String();
   }
   String fileContent;
-  while(file.available()){
+  while (file.available()) {
     fileContent = file.readStringUntil('\n');
     break;
   }
@@ -241,56 +233,56 @@ String readFile(fs::FS &fs, const char* path){
   return fileContent;
 }
 
-void writeFile(fs::FS &fs, const char * path, const char * message){
+void writeFile(fs::FS &fs, const char * path, const char * message) {
   Serial.printf("Writing file: %s\r\n", path);
   File file = fs.open(path, FILE_WRITE);
-  if(!file){
+  if (!file) {
     Serial.println("ERROR: FAILED TO OPEN FILE FOR WRITING");
     return;
   }
-  if(file.print(message)){
+  if (file.print(message)) {
     Serial.println("FILE WRITTEN");
   } else {
     Serial.println("WRITE FAILED!");
   }
 }
 
-void serialConfig(){
+void serialConfig() {
   bool stringComplete = false;
   bool loopStatus = true;
   String text = "";
   pinMode(transmitterLed, OUTPUT);
-  if(digitalRead(buttonPin)==1){
+  if (digitalRead(buttonPin) == 1) {
     Serial.println("Going into programming mode!");
     if (!SPIFFS.begin(true)) {
-    Serial.println("Error occured while trying to mount spiffs :(");
-  }
-  Serial.println("Sucessfully mounted spiffs");
-    while(loopStatus){
-      digitalWrite(transmitterLed, millis()%500>250);
-      
-    if(Serial.available()){
-    char inChar = (char)Serial.read();
-    text += inChar;
-    if(inChar == '\n'){
-        //state = true;
-        stringComplete = true;
+      Serial.println("Error occured while trying to mount spiffs :(");
     }
-  }
+    Serial.println("Sucessfully mounted spiffs");
+    while (loopStatus) {
+      digitalWrite(transmitterLed, millis() % 500 > 250);
 
-  if(stringComplete){
-      text.trim();
-      if(text.equals("#EXIT")){
-        loopStatus = false;
-        Serial.println("Exiting programming mode");
-        delay(1000);
+      if (Serial.available()) {
+        char inChar = (char)Serial.read();
+        text += inChar;
+        if (inChar == '\n') {
+          //state = true;
+          stringComplete = true;
+        }
       }
-      if(text.equals("#SSID_")){
-        Serial.println("Testing ssid thing");
+
+      if (stringComplete) {
+        text.trim();
+        if (text.equals("#EXIT")) {
+          loopStatus = false;
+          Serial.println("Exiting programming mode");
+          delay(1000);
+        }
+        if (text.equals("#SSID_")) {
+          Serial.println("Testing ssid thing");
+        }
+        text = "";
+        stringComplete = false;
       }
-      text = "";
-      stringComplete = false;
-    }
     }
   }
 }
@@ -318,9 +310,9 @@ void setup() {
   pinMode(white_led, OUTPUT);
   pinMode(transmitterLed, OUTPUT);
   pinMode(transmitterPin, OUTPUT);
-  
+
   while (WiFi.status() != WL_CONNECTED) {
-    digitalWrite(red_led, millis()%1000>500);
+    digitalWrite(red_led, millis() % 1000 > 500);
   }
   setNTPzone();
   transmitFanCode(FAN_OFF); // If the fan is on turn it off for the webpage to handle the button selection better or it will be messed up
@@ -328,16 +320,45 @@ void setup() {
   initWebsocket();
 }
 
+void fanTemp(byte degree) {
+#define TEMPFANHIGH  0
+#define TEMPFANLOW 1
+  static bool tempFanState[2] = {true};
+  if (outputTemp() >= degree) {
+    if (tempFanState[TEMPFANHIGH]) {
+      transmitFanCode(FAN_MED);
+      tempFanState[TEMPFANHIGH] = false;
+      tempFanState[TEMPFANLOW] = true;
+    }
+
+  }
+
+  else {
+    if (tempFanState[TEMPFANLOW]) {
+      //transmitFanCode(FAN_OFF);
+      tempFanState[TEMPFANHIGH] = true;
+      tempFanState[TEMPFANLOW] = false;
+    }
+  }
+}
+
 void loop() {
   blinkWebConnectionLed();
+  if (millis() - previousTimes[7] >= 20000) {
+    previousTimes[7] = millis();
+    fanTemp(28);
+  }
+
+  if(chkTime(00, 00, 00)){days++; ws.textAll("DAY" + String(days));}
+
+
+
   static int lastTemp = 0;
-  if (chkTime(fanOnTime[0], fanOnTime[1], fanOnTime[2]) && lightState) { 
+  if (chkTime(fanOnTime[0], fanOnTime[1], fanOnTime[2]) && lightState) {
     transmitFanCode(FAN_LOW);
     transmitFanCode(FANLIGHT_ON_OFF);
     lightState = false;
   }
-
-  if(!wifiConnection){pingCheck();}
 
   if (chkTime(fanlightOnTime[0], fanlightOnTime[1], fanlightOnTime[2]) && !lightState) {
     transmitFanCode(FANLIGHT_ON_OFF);
@@ -352,13 +373,13 @@ void loop() {
     ws.cleanupClients();
   }
 
-  if (lastTemp != outputTemp() && millis() - previousTimes[4] >=1000) {
+  if (lastTemp != outputTemp() && millis() - previousTimes[4] >= 1000) {
     previousTimes[4] = millis();
     ws.textAll("TEM" + String(outputTemp()));
     lastTemp = outputTemp();
   }
 
-  if(ktState != lightState){ //only send the websocket request when the state only gets changed otherwise will be too much sending traffic and can fuck up things
+  if (ktState != lightState) { //only send the websocket request when the state only gets changed otherwise will be too much sending traffic and can fuck up things
     ws.textAll("LS" + String(lightState));
     ktState = lightState;
   }
