@@ -20,16 +20,11 @@ button{
 	margin-right: auto;
 }
 
-#temperaturereading{
-	color: #eeff00;
-	text-shadow: 0 0 10px #eeff00;
-}
-
 .servertext{
 	color: #9900ff;
 }
 
-#state{
+#state, #connectionsText, #lightStateReading, #temperaturereading{
 	color: #eeff00;
 	text-shadow: 0 0 10px #eeff00;
 }
@@ -52,11 +47,6 @@ button{
 #fish{
 	color: #9900ff;
 	text-shadow: 0 0 10px #9900ff;
-}
-
-#lightStateReading{
-	color: #eeff00;;
-	text-shadow: 0 0 10px #eeff00;;
 }
 
  #temptext {
@@ -103,9 +93,18 @@ button:hover{
 	padding-top: 10px;
 }
 
+@media (hover: hover){
+
+}
+
 @media only screen and (max-width: 384px){
 	.buttonPane{
 		width: 110%;
+		
+	}
+
+	#main{
+		margin-right: 92px;
 	}
 
 	.lightstatusCon{

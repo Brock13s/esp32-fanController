@@ -6,6 +6,7 @@ let bscolor = "#cc0000";
 let bcolor = "#d3d3d3";
 let buttonstate = 0;
 let stateData;
+let intervalTime = 0;
 
 window.addEventListener('load', onload);
 function initWebSocket(){
@@ -18,6 +19,7 @@ function initWebSocket(){
 }
 
 function onload(event){
+	console.log("Watcha doing in the console trying to hack me! 0_0");
 	initWebSocket();
 	initButtons();
 }
@@ -25,7 +27,12 @@ function onload(event){
 function onMessage(event){ // IF the user presses on one of the buttons and if it was sucessful the server replies back to the client.
 	let text = event.data;
 	let temperature = text.slice(3,5);
+	let connectiontext = text.slice(3);
 	let lstatus = text.charAt(2);
+	if(text == '__pong__'){
+		pong();
+		return;
+	}
 
 
 	if(text.startsWith("TEM")){
@@ -41,6 +48,10 @@ function onMessage(event){ // IF the user presses on one of the buttons and if i
 			document.getElementById("bulbPic").src = 'bulb-off';
 		}
 	}
+
+	else if(text.startsWith("DAY")){
+		document.getElementById("connectionsText").innerHTML = connectiontext;
+	}
 	 else{
 		document.getElementById("state").innerHTML = text;
 	}
@@ -48,7 +59,8 @@ function onMessage(event){ // IF the user presses on one of the buttons and if i
 
 
 function onError(event){
-	console.log(event);
+	console.log('Socket error: ', event.message, 'closing socket');
+	websocket.close();
 }
 
 function onOpen(event){
@@ -78,5 +90,10 @@ function initButtons(){
 }
 
 function onClose(event){
-	console.log('Connection closed');
+	console.log('Connection closed', event.reason);
+	if(confirm("The websocket session expired 0_0. Do you want to reconnect?")==true){
+		window.location.reload();
+	} else {
+		document.location.href='about:blank';
+	}
 }
