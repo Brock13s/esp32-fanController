@@ -6,7 +6,6 @@
 #include <RCSwitch.h>
 #include <ESPAsyncWebServer.h>
 #include <WiFi.h>
-#include <ESP32Ping.h>
 #include <SPIFFS.h>
 #include "time.h"
 #include "wifi_credentials.h"
@@ -23,7 +22,7 @@ unsigned long previousTimes[8] = {0};
 uint8_t fanlightOnTime[3] = {18, 00, 0};
 uint8_t fanOnTime[3] = {20, 30, 0};
 uint8_t fanlightOffTime[3] = {07, 50, 0};
-unsigned long days = 1;
+int days = 0;
 bool blinkOn = false;
 String message = "FANCODE_OFF";
 
@@ -118,6 +117,10 @@ void webpageHandling() {
     request->send(SPIFFS, "/css.css", "text/css");
   });
 
+  server.onNotFound([](AsyncWebServerRequest *request){
+    request->send(404, "text/plain", "Sorry, not sorry idiot, but there is nothing here unfortunately ;-(");
+  });
+
   server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/script.js", "text/javascript");
   });
@@ -128,10 +131,6 @@ void webpageHandling() {
 
   server.on("/bulb-on", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/bulb-on.png", "image/png");
-  });
-
-  server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest * request){
-    request->send(SPIFFS, "/favicon.png", "image/png");
   });
 
   server.begin();
@@ -217,75 +216,75 @@ void blinkWebConnectionLed() {
   }
 }
 
-String readFile(fs::FS &fs, const char* path) {
-  Serial.printf("Reading file: %s\r\n", path);
-  File file = fs.open(path);
-  if (!file || file.isDirectory()) {
-    Serial.println("FAILED TO OPEN FILE TO READ");
-    return String();
-  }
-  String fileContent;
-  while (file.available()) {
-    fileContent = file.readStringUntil('\n');
-    break;
-  }
+//String readFile(fs::FS &fs, const char* path) {
+//  Serial.printf("Reading file: %s\r\n", path);
+//  File file = fs.open(path);
+//  if (!file || file.isDirectory()) {
+//    Serial.println("FAILED TO OPEN FILE TO READ");
+//    return String();
+//  }
+//  String fileContent;
+//  while (file.available()) {
+//    fileContent = file.readStringUntil('\n');
+//    break;
+//  }
+//
+//  return fileContent;
+//}
 
-  return fileContent;
-}
+//void writeFile(fs::FS &fs, const char * path, const char * message) {
+//  Serial.printf("Writing file: %s\r\n", path);
+//  File file = fs.open(path, FILE_WRITE);
+//  if (!file) {
+//    Serial.println("ERROR: FAILED TO OPEN FILE FOR WRITING");
+//    return;
+//  }
+//  if (file.print(message)) {
+//    Serial.println("FILE WRITTEN");
+//  } else {
+//    Serial.println("WRITE FAILED!");
+//  }
+//}
 
-void writeFile(fs::FS &fs, const char * path, const char * message) {
-  Serial.printf("Writing file: %s\r\n", path);
-  File file = fs.open(path, FILE_WRITE);
-  if (!file) {
-    Serial.println("ERROR: FAILED TO OPEN FILE FOR WRITING");
-    return;
-  }
-  if (file.print(message)) {
-    Serial.println("FILE WRITTEN");
-  } else {
-    Serial.println("WRITE FAILED!");
-  }
-}
-
-void serialConfig() {
-  bool stringComplete = false;
-  bool loopStatus = true;
-  String text = "";
-  pinMode(transmitterLed, OUTPUT);
-  if (digitalRead(buttonPin) == 1) {
-    Serial.println("Going into programming mode!");
-    if (!SPIFFS.begin(true)) {
-      Serial.println("Error occured while trying to mount spiffs :(");
-    }
-    Serial.println("Sucessfully mounted spiffs");
-    while (loopStatus) {
-      digitalWrite(transmitterLed, millis() % 500 > 250);
-
-      if (Serial.available()) {
-        char inChar = (char)Serial.read();
-        text += inChar;
-        if (inChar == '\n') {
-          //state = true;
-          stringComplete = true;
-        }
-      }
-
-      if (stringComplete) {
-        text.trim();
-        if (text.equals("#EXIT")) {
-          loopStatus = false;
-          Serial.println("Exiting programming mode");
-          delay(1000);
-        }
-        if (text.equals("#SSID_")) {
-          Serial.println("Testing ssid thing");
-        }
-        text = "";
-        stringComplete = false;
-      }
-    }
-  }
-}
+//void serialConfig() {
+//  bool stringComplete = false;
+//  bool loopStatus = true;
+//  String text = "";
+//  pinMode(transmitterLed, OUTPUT);
+//  if (digitalRead(buttonPin) == 1) {
+//    Serial.println("Going into programming mode!");
+//    if (!SPIFFS.begin(true)) {
+//      Serial.println("Error occured while trying to mount spiffs :(");
+//    }
+//    Serial.println("Sucessfully mounted spiffs");
+//    while (loopStatus) {
+//      digitalWrite(transmitterLed, millis() % 500 > 250);
+//
+//      if (Serial.available()) {
+//        char inChar = (char)Serial.read();
+//        text += inChar;
+//        if (inChar == '\n') {
+//          //state = true;
+//          stringComplete = true;
+//        }
+//      }
+//
+//      if (stringComplete) {
+//        text.trim();
+//        if (text.equals("#EXIT")) {
+//          loopStatus = false;
+//          Serial.println("Exiting programming mode");
+//          delay(1000);
+//        }
+//        if (text.equals("#SSID_")) {
+//          Serial.println("Testing ssid thing");
+//        }
+//        text = "";
+//        stringComplete = false;
+//      }
+//    }
+//  }
+//}
 
 void setup() {
   Serial.begin(115200);
@@ -349,8 +348,6 @@ void loop() {
     fanTemp(28);
   }
 
-  if(chkTime(00, 00, 00)){days++; ws.textAll("DAY" + String(days));}
-
 
 
   static int lastTemp = 0;
@@ -358,6 +355,12 @@ void loop() {
     transmitFanCode(FAN_LOW);
     transmitFanCode(FANLIGHT_ON_OFF);
     lightState = false;
+  }
+
+  if(chkTime(23, 50, 00)){
+    days++;
+    ws.textAll("DAY" + String(days));
+    delay(2000);
   }
 
   if (chkTime(fanlightOnTime[0], fanlightOnTime[1], fanlightOnTime[2]) && !lightState) {
