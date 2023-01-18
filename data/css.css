@@ -24,7 +24,7 @@ button{
 	color: #9900ff;
 }
 
-#state, #connectionsText, #lightStateReading, #temperaturereading{
+#connectionsText, #lightStateReading, #temperaturereading{
 	color: #eeff00;
 	text-shadow: 0 0 10px #eeff00;
 }
@@ -42,11 +42,6 @@ button{
 	margin-top: 20px;
 	object-fit: cover;
 	width: 100px;
-}
-
-#fish{
-	color: #9900ff;
-	text-shadow: 0 0 10px #9900ff;
 }
 
  #temptext {

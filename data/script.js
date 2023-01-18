@@ -2,11 +2,7 @@
 
 var gateway = `ws://${window.location.hostname}/ws`;
 var websocket;
-let bscolor = "#cc0000";
-let bcolor = "#d3d3d3";
-let buttonstate = 0;
-let stateData;
-let intervalTime = 0;
+let connectiontext;
 
 window.addEventListener('load', onload);
 function initWebSocket(){
@@ -27,12 +23,8 @@ function onload(event){
 function onMessage(event){ // IF the user presses on one of the buttons and if it was sucessful the server replies back to the client.
 	let text = event.data;
 	let temperature = text.slice(3,5);
-	let connectiontext = text.slice(3);
+	 connectiontext = text.slice(3);
 	let lstatus = text.charAt(2);
-	if(text == '__pong__'){
-		pong();
-		return;
-	}
 
 
 	if(text.startsWith("TEM")){
@@ -51,9 +43,54 @@ function onMessage(event){ // IF the user presses on one of the buttons and if i
 
 	else if(text.startsWith("DAY")){
 		document.getElementById("connectionsText").innerHTML = connectiontext;
+		let daysFoo = (connectiontext > "1") ? "days" : "day";
+		console.log(daysFoo);
+		document.getElementById("daysState").innerHTML = daysFoo;
 	}
 	 else{
-		document.getElementById("state").innerHTML = text;
+		if(text=="FANCODE_HIGH"){
+			document.getElementById("btn_high").style.backgroundColor = "green";
+			document.getElementById("btn_med").style.backgroundColor = "";
+			document.getElementById("btn_low").style.backgroundColor = "";
+			document.getElementById("btn_off").style.backgroundColor = "";
+			document.getElementById("btn_changecolor").style.backgroundColor = "";
+			document.getElementById("btn_lightonoff").style.backgroundColor = "";
+		} else if(text=="FANCODE_MED"){
+			document.getElementById("btn_med").style.backgroundColor = "green";
+			document.getElementById("btn_high").style.backgroundColor = "";
+			document.getElementById("btn_low").style.backgroundColor = "";
+			document.getElementById("btn_off").style.backgroundColor = "";
+			document.getElementById("btn_changecolor").style.backgroundColor = "";
+			document.getElementById("btn_lightonoff").style.backgroundColor = "";
+		} else if(text=="FANCODE_LOW"){
+			document.getElementById("btn_low").style.backgroundColor = "green";
+			document.getElementById("btn_med").style.backgroundColor = "";
+			document.getElementById("btn_high").style.backgroundColor = "";
+			document.getElementById("btn_off").style.backgroundColor = "";
+			document.getElementById("btn_changecolor").style.backgroundColor = "";
+			document.getElementById("btn_lightonoff").style.backgroundColor = "";
+		} else if(text=="FANCODE_OFF"){
+			document.getElementById("btn_off").style.backgroundColor = "green";
+			document.getElementById("btn_med").style.backgroundColor = "";
+			document.getElementById("btn_low").style.backgroundColor = "";
+			document.getElementById("btn_high").style.backgroundColor = "";
+			document.getElementById("btn_changecolor").style.backgroundColor = "";
+			document.getElementById("btn_lightonoff").style.backgroundColor = "";
+		} else if(text=="FANCODE_CHANGECOLOR"){
+			document.getElementById("btn_changecolor").style.backgroundColor = "green";
+			document.getElementById("btn_med").style.backgroundColor = "";
+			document.getElementById("btn_low").style.backgroundColor = "";
+			document.getElementById("btn_off").style.backgroundColor = "";
+			document.getElementById("btn_high").style.backgroundColor = "";
+			document.getElementById("btn_lightonoff").style.backgroundColor = "";
+		} else if(text=="FANCODE_LIGHTONOFF"){
+			document.getElementById("btn_lightonoff").style.backgroundColor = "green";
+			document.getElementById("btn_med").style.backgroundColor = "";
+			document.getElementById("btn_low").style.backgroundColor = "";
+			document.getElementById("btn_off").style.backgroundColor = "";
+			document.getElementById("btn_changecolor").style.backgroundColor = "";
+			document.getElementById("btn_high").style.backgroundColor = "";
+		}
 	}
 }
 
@@ -91,9 +128,5 @@ function initButtons(){
 
 function onClose(event){
 	console.log('Connection closed', event.reason);
-	if(confirm("The websocket session expired 0_0. Do you want to reconnect?")==true){
-		window.location.reload();
-	} else {
-		document.location.href='about:blank';
-	}
+	setTimeout(function(){window.location.reload();}, 5000);
 }
