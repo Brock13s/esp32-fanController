@@ -132,6 +132,12 @@ void webpageHandling() {
   server.on("/bulb-on", HTTP_GET, [](AsyncWebServerRequest * request) {
     request->send(SPIFFS, "/bulb-on.png", "image/png");
   });
+  server.on("/temperature", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send(SPIFFS, "/temperature.html", String(), false);
+  });
+  server.on("/gauge.min.js", HTTP_GET, [](AsyncWebServerRequest * request) {
+    request->send(SPIFFS, "/gauge.min.js", "text/javascript");
+  });
 
   server.begin();
 }
