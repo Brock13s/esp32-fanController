@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="gauge.min.js"></script>
+        
+        <title>Room Temperature</title>
+        <style>
+            html,body{
+                background-color: black;
+                height: 100%;
+                width: 100%;
+                margin: 0;
+            }
+        </style>
+    </head>
+
+  <body>
+    <canvas id="gauge-temperature"></canvas>
+    <script>
+    var gateway = `ws://${window.location.hostname}/ws`;
+    var websocket;
+
+    window.addEventListener('load', onload);
+    function initWebSocket(){
+	    console.log("trying to open a websocket connection...");
+	    websocket = new WebSocket(gateway);
+	    websocket.onopen = onOpen;
+	    websocket.onclose = onClose;
+	    websocket.onmessage = onMessage;
+	    websocket.onerror = onError;
+    }
+
+    function onload(event){
+        initWebSocket();
+    }
+
+    function onMessage(event){
+        let text = event.data;
+        let temperature = text.slice(3,5);
+        if(text.startsWith("TEM")){
+            tempgauge.value = temperature;
+        }
+    }
+
+    function onClose(event){
+        console.log('Connection closed', event.reason);
+	    setTimeout(function(){window.location.reload();}, 5000);
+    }
+
+    function onError(event){
+	    console.log('Socket error: ', event.message, 'closing socket');
+	    websocket.close();
+    }
+
+    function onOpen(event){
+	    console.log('Connection opened');
+    }
+
+    
+    
+    var tempgauge = new RadialGauge({
+        renderTo: 'gauge-temperature',
+        units: "°C",
+        title: "Temperature",
+        minValue: -50,
+        height: 400,
+        maxValue: 50,
+        majorTicks: [
+            -50,
+            -40,
+            -30,
+            -20,
+            -10,
+            0,
+            10,
+            20,
+            30,
+            40,
+            50
+        ],
+        minorTicks: 2,
+        strokeTicks: true,
+        highlights: [
+            {
+                "from": -50,
+                "to": 0,
+                "color": "rgba(0,0, 255, .5)"
+            },
+            {
+                "from": 0,
+                "to": 10,
+                "color": "rgba(0, 255, 255, .5)"
+            },
+            {
+                "from": 10,
+                "to": 20,
+                "color": "rgba(0, 255, 0, .5)"
+            },
+            {
+                "from": 20,
+                "to": 25,
+                "color": "rgba(255, 255, 0, .5)"
+            },
+            {
+                "from": 25,
+                "to": 50,
+                "color": "rgba(255, 0, 0, .5)"
+            }
+        ],
+        ticksAngle: 225,
+        startAngle: 67.5,
+        colorMajorTicks: "white",
+        colorMinorTicks: "white",
+        colorTitle: "lime",
+        colorUnits: "lime",
+        colorNumbers: "lime",
+        colorPlate: "black",
+        borderShadowWidth: 0,
+        borders: true,
+        needleType: "arrow",
+        needleWidth: 2,
+        needleCircleSize: 7,
+        needleCircleOuter: true,
+        needleCircleInner: false,
+        animationDuration: 1500,
+        animationRule: "linear",
+        colorBorderOuter: "#333",
+        colorBorderOuterEnd: "#111",
+        colorBorderMiddle: "#222",
+        colorBorderMiddleEnd: "#111",
+        colorBorderInner: "#111",
+        colorBorderInnerEnd: "#333",
+        colorNeedleShadowDown: "#333",
+        colorNeedleCircleOuter: "#333",
+        colorNeedleCircleOuterEnd: "#111",
+        colorNeedleCircleInner: "#111",
+        colorNeedleCircleInnerEnd: "#222",
+        valueBoxBorderRadius: 0,
+        colorValueBoxRect: "lime",
+        colorValueBoxRectEnd: "lime",
+        valueDec: 0,
+        valueInt: 0,
+        colorValueText: "White",
+        colorValueBoxBackground: "black"
+    }).draw();</script>
+  </body>
+</html>
